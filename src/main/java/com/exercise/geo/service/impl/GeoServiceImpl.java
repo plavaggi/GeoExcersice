@@ -1,6 +1,7 @@
 package com.exercise.geo.service.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -60,8 +61,10 @@ public class GeoServiceImpl implements GeoService {
 		}
 
 		for (RestCountryLanguage language : countryData.getLanguages()) {
-			idiomas.add(language.getName()+" ("+language.getIso639_1()+")");
+			idiomas.add(language.getName() + " (" + language.getIso639_1() + ")");
 		}
+
+		currency = currency + (" = ") + BigDecimal.ONE.divide(exchange, 2, RoundingMode.HALF_UP) + " (USD)";
 
 		String distance = distance(countryData.getLatlng().get(0), countryData.getLatlng().get(1));
 		return new CountryDataDto(ip, name, isoCode3, horaLocal, idiomas, currency, distance);
