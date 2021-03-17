@@ -1,17 +1,18 @@
 package com.exercise.geo.service.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.exercise.geo.model.CountryDistance;
+import com.exercise.geo.model.GeoData;
+import com.exercise.geo.repository.GeoDataRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.exercise.geo.dto.CountryDataDto;
+import com.exercise.geo.dto.GeoDataDto;
 import com.exercise.geo.response.Ip2CountryResponse;
 import com.exercise.geo.response.RestCountryLanguage;
 import com.exercise.geo.response.RestCountryResponse;
@@ -35,23 +36,52 @@ public class GeoServiceImpl implements GeoService {
 	@Value("${external.endpoint.url.api.currencyLayer}")
 	private String currencyLayerEndpoint;
 
+	private final GeoDataRepository geoDataRepository;
+
+
 	@Override
-	public CountryDataDto getDataByIp(String ip) {
+	public GeoDataDto getDataByIp(String ip) {
 		Ip2CountryResponse ip2Country = getCountryByIp(ip);
 		String isoCode3 = ip2Country.getCountryCode3();
 
-		RestCountryResponse countryData = getCountryDatAByIsoCode(isoCode3);
+		RestCountryResponse countryData = getCountryDatAByIsoCode3(isoCode3);
 		String currency = countryData.getCurrencies().get(0).getCode();
+		String country = countryData.getTranslations().get("es");
+		Double distance = distance(countryData.getLatlng().get(0), countryData.getLatlng().get(1));
 
-		BigDecimal exchange = getExchange(currency);
+		Double exchange = getExchange(currency);
 
-		return prepareResponse(countryData, ip, isoCode3, currency, exchange);
+		GeoData data = new GeoData(ip, country, distance);
+		geoDataRepository.save(data);
+
+		return prepareResponse(countryData, ip, isoCode3, currency, exchange, country, distance.toString());
 
 	}
 
-	private CountryDataDto prepareResponse(RestCountryResponse countryData, String ip, String isoCode3, String currency,
-			BigDecimal exchange) {
-		String name = countryData.getTranslations().get("es");
+	@Override
+	public GeoDataDto getMaxDistance() {
+		GeoData data = geoDataRepository.findMaxDistance();
+		GeoDataDto response = new GeoDataDto();
+		response.setIp(data.getIp());
+		response.setDistanciaEstimada(data.getDistance().toString());
+		response.setPais(data.getCountry());
+
+		return response;
+	}
+
+	@Override
+	public GeoDataDto getMinDistance() {
+		GeoData data = geoDataRepository.findMinDistance();
+		GeoDataDto response = new GeoDataDto();
+		response.setIp(data.getIp());
+		response.setDistanciaEstimada(data.getDistance().toString());
+		response.setPais(data.getCountry());
+
+		return response;
+	}
+
+	private GeoDataDto prepareResponse(RestCountryResponse countryData, String ip, String isoCode3, String currency,
+									   Double exchange, String country, String distance) {
 		List<String> horaLocal = new ArrayList<>();
 		List<String> idiomas = new ArrayList<>();
 
@@ -64,15 +94,14 @@ public class GeoServiceImpl implements GeoService {
 			idiomas.add(language.getName() + " (" + language.getIso639_1() + ")");
 		}
 
-		currency = currency + (" = ") + BigDecimal.ONE.divide(exchange, 2, RoundingMode.HALF_UP) + " (USD)";
+		currency = currency + (" = ") + 1 / exchange + " (USD)";
 
-		String distance = distance(countryData.getLatlng().get(0), countryData.getLatlng().get(1));
-		return new CountryDataDto(ip, name, isoCode3, horaLocal, idiomas, currency, distance);
+		return new GeoDataDto(ip, country, isoCode3, horaLocal, idiomas, currency, distance);
 	}
 
-	private String distance(double lat2, double lon2) {
+	private double distance(double lat2, double lon2) {
 		if ((-34.0 == lat2) && (-64.0 == lon2)) {
-			return String.valueOf(0);
+			return 0;
 		} else {
 			double theta = -64.0 - lon2;
 			double dist = Math.sin(Math.toRadians(-34.0)) * Math.sin(Math.toRadians(lat2))
@@ -82,7 +111,7 @@ public class GeoServiceImpl implements GeoService {
 			dist = Math.toDegrees(dist);
 			dist = dist * 60 * 1.1515;
 			dist = dist * 1.609344;
-			return (String.valueOf(dist));
+			return (dist);
 		}
 	}
 
@@ -93,7 +122,7 @@ public class GeoServiceImpl implements GeoService {
 		return response;
 	}
 
-	public RestCountryResponse getCountryDatAByIsoCode(String countryIsoCode) {
+	public RestCountryResponse getCountryDatAByIsoCode3(String countryIsoCode) {
 		RestTemplate restTemplate = new RestTemplate();
 		RestCountryResponse response = restTemplate.getForObject(restCountryEndpoint.concat(countryIsoCode),
 				RestCountryResponse.class);
@@ -101,9 +130,9 @@ public class GeoServiceImpl implements GeoService {
 
 	}
 
-	public BigDecimal getExchange(String currency) {
+	public Double getExchange(String currency) {
 		RestTemplate restTemplate = new RestTemplate();
 		JsonNode response = restTemplate.getForObject(currencyLayerEndpoint.concat(currency), JsonNode.class);
-		return BigDecimal.valueOf(response.get("quotes").get("USD".concat(currency)).asDouble());
+		return response.get("quotes").get("USD".concat(currency)).asDouble();
 	}
 }
