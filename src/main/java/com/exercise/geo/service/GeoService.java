@@ -9,4 +9,6 @@ public interface GeoService {
     GeoDataDto getMaxDistance();
 
     GeoDataDto getMinDistance();
+
+	Double getAverageDistance();
 }

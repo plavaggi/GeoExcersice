@@ -39,4 +39,11 @@ public class GeoController {
         GeoDataDto data = geoService.getMinDistance();
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
+    
+    @GetMapping(path = "/promedio")
+    @ResponseStatus(code = HttpStatus.OK)
+    public ResponseEntity<Double> getAverageDistance()  {
+    	Double data = geoService.getAverageDistance();
+        return new ResponseEntity<>(data, HttpStatus.OK);
+    }
 }

@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.exercise.geo.model.CountryDistance;
 import com.exercise.geo.model.GeoData;
@@ -37,7 +38,6 @@ public class GeoServiceImpl implements GeoService {
 	private String currencyLayerEndpoint;
 
 	private final GeoDataRepository geoDataRepository;
-
 
 	@Override
 	public GeoDataDto getDataByIp(String ip) {
@@ -80,8 +80,16 @@ public class GeoServiceImpl implements GeoService {
 		return response;
 	}
 
+	@Override
+	public Double getAverageDistance() {
+		List<String> data = geoDataRepository.sumTest();
+		String[] parts = data.get(0).split(",");
+		double part1 = Double.valueOf(parts[0])/Double.valueOf(parts[1]); 
+		return part1;
+	}
+
 	private GeoDataDto prepareResponse(RestCountryResponse countryData, String ip, String isoCode3, String currency,
-									   Double exchange, String country, String distance) {
+			Double exchange, String country, String distance) {
 		List<String> horaLocal = new ArrayList<>();
 		List<String> idiomas = new ArrayList<>();
 
@@ -135,4 +143,5 @@ public class GeoServiceImpl implements GeoService {
 		JsonNode response = restTemplate.getForObject(currencyLayerEndpoint.concat(currency), JsonNode.class);
 		return response.get("quotes").get("USD".concat(currency)).asDouble();
 	}
+
 }
