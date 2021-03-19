@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>GEO APP</title>
+
+    <link th:rel="stylesheet" th:href="@{webjars/bootstrap/4.0.0-2/css/bootstrap.min.css} "/>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">Geo APP</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/reporte">Reportes
+<!--
+                        <span class="sr-only">(current)</span>
+-->
+                    </a>
+                </li>
+<!--                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>-->
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 mt-5">
+            <form method="post">
+
+
+            <a th:href="@{/max}" class="btn btn-secondary btn-lg" tabindex="-1" role="button" aria-disabled="true">Mayor Distancia</a>
+            <a th:href="@{/min}" class="btn btn-secondary btn-lg" tabindex="-1" role="button" aria-disabled="true">Menor Distancia</a>
+            <a  class="btn btn-secondary btn-lg" tabindex="-1" role="button" aria-disabled="true">Promedio de distancia</a>
+            </form>
+        </div>
+    </div>
+    <br/>
+    <br/>
+    <div class="row">
+<!--
+        <strong th:text="${GeoDataDto.ip}"></strong>
+-->
+
+        <a th:href="@{/reporte}" class="btn btn-primary">Clear</a>
+    </div>
+
+</div>
+
+</body>
+</html>

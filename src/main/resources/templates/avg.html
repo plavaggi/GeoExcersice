@@ -40,54 +40,18 @@
     </div>
 </nav>
 
+
+
 <div class="container">
     <div class="row">
         <div class="col-sm-12 mt-5">
-            <p>
-                <label>Ip: </label>
-                <strong th:text="${GeoDataDto.ip}"></strong>
-            </p>
 
             <p>
-                <label>Pais (12h): </label>
-                <strong th:text="${GeoDataDto.pais}"></strong>
+                <label>La distancia promedio es: </label>
+                <strong th:text="${averageDistance}"></strong>
             </p>
 
-            <p>
-                <label>Hora Local: </label>
-                <ul th:each="horas : ${GeoDataDto.hora}">
-                    <strong th:text="${horas}"></strong>
-                </ul>
-            </p>
 
-            <p>
-                <label>ISO Code3: </label>
-                <strong th:text="${GeoDataDto.isoCode}"></strong>
-            </p>
-
-            <p>
-                <label>Idiomas: </label>
-                <ul th:each="idiomas : ${GeoDataDto.idioma}">
-                    <strong th:text="${idiomas}"></strong>
-                </ul>
-            </p>
-
-            <p>
-                <label>Moneda Local: </label>
-                <ul th:each="monedaLocal : ${GeoDataDto.monedaLocal}">
-                    <strong th:text="${monedaLocal}"></strong>
-                </ul>
-            </p>
-
-            <p>
-                <label>Distancia Estimada (km): </label>
-                <strong th:text="${GeoDataDto.distanciaEstimada}"></strong>
-            </p>
-
-            <p>
-                <label>Fecha Actual: </label>
-                <strong th:text="${GeoDataDto.fechaActual}"></strong>
-            </p>
         </div>
     </div>
 
