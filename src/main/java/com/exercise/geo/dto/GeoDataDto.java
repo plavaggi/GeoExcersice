@@ -28,13 +28,13 @@ public class GeoDataDto {
     @JsonProperty("Idioma")
     private List<String> idioma;
     @JsonProperty("Moneda Local")
-    private String monedaLocal;
+    private List<String> monedaLocal;
     @JsonProperty("Distancia Estimada")
     private String distanciaEstimada;
     @JsonProperty("Fecha Actual")
     private Timestamp fechaActual;
 
-    public GeoDataDto(String ip, String pais, String isoCode, List<String> hora, List<String> idioma, String monedaLocal, String distanciaEstimada) {
+    public GeoDataDto(String ip, String pais, String isoCode, List<String> hora, List<String> idioma, List<String> monedaLocal, String distanciaEstimada) {
         this.ip = ip;
     	this.pais = pais;
         this.isoCode = isoCode;
