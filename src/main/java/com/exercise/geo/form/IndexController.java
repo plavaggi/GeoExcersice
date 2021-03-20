@@ -1,7 +1,7 @@
-package com.exercise.geo.controller;
+package com.exercise.geo.form;
 
 import com.exercise.geo.dto.GeoDataDto;
-import com.exercise.geo.model.Input;
+import com.exercise.geo.model.common.Input;
 import com.exercise.geo.service.GeoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,8 +26,15 @@ public class IndexController {
 
     @PostMapping
     public String save(Input input, Model model) {
-        String ipAdress = input.getIpAddress();
-        model.addAttribute("GeoDataDto", geoService.getDataByIp(ipAdress));
-        return "saved";
+        try {
+            String ipAdress = input.getIpAddress();
+            GeoDataDto GeoDataDto = geoService.postDataByIp(ipAdress);
+            model.addAttribute("GeoDataDto", GeoDataDto);
+            return "saved";
+        }catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "error";
+        }
+
     }
 }

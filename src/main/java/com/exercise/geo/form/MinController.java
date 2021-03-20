@@ -1,4 +1,4 @@
-package com.exercise.geo.controller;
+package com.exercise.geo.form;
 
 import com.exercise.geo.service.GeoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +8,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping({ "/max"})
-public class MaxController {
+@RequestMapping({ "/min"})
+public class MinController {
     @Autowired
     private GeoService geoService;
 
     @GetMapping
     public String main(Model model) {
-        model.addAttribute("GeoDataDto",geoService.getMaxDistance());
-        return "max";
+        try {
+            model.addAttribute("GeoDataDto",geoService.getMinDistance());
+            return "min";
+        }catch (Exception e) {
+            model.addAttribute("error", "Cannot retrieve any data, try searching for an ip first");
+            return "error";
+        }
     }
 }

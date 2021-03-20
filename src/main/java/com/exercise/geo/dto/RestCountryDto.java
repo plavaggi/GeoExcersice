@@ -1,5 +1,7 @@
-package com.exercise.geo.response;
+package com.exercise.geo.dto;
 
+import com.exercise.geo.model.restCountry.RestCountryCurrency;
+import com.exercise.geo.model.restCountry.RestCountryLanguage;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -10,7 +12,7 @@ import java.util.Map;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RestCountryResponse {
+public class RestCountryDto {
 
     private String name;
     private List<Double> latlng;

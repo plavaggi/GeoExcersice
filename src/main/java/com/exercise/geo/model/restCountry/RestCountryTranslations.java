@@ -1,4 +1,4 @@
-package com.exercise.geo.response;
+package com.exercise.geo.model.restCountry;
 
 public class RestCountryTranslations {
     private String es;

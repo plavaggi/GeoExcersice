@@ -20,21 +20,9 @@
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="/reporte">Reportes
-<!--
-                        <span class="sr-only">(current)</span>
--->
+                    <a class="nav-link" href="/report">Reportes
                     </a>
                 </li>
-  <!--              <li class="nav-item">
-                    <a class="nav-link" href="#">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Services</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
-                </li>-->
             </ul>
         </div>
     </div>
@@ -44,40 +32,7 @@
     <div class="row">
         <div class="col-sm-10 mt-5">
             <form method="post" th:object="${input}">
-                <!--<div class="form-group row">
-                    <label for="email" class="col-sm-4 col-form-label">Email</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="email" data-inputmask="'alias': 'email'"
-                               autocomplete="off" th:field="*{email}"/>
-                    </div>
-                </div>
 
-                <div class="form-group row">
-                    <label for="time12h" class="col-sm-4 col-form-label">Time (12h)</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="time12h" data-inputmask-alias="datetime"
-                               data-inputmask-inputformat="hh:MM" data-inputmask-placeholder="hh:mm"
-                               autocomplete="off" th:field="*{time12h}"/>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="time24h" class="col-sm-4 col-form-label">Time (24h)</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="time24h" data-inputmask-alias="datetime"
-                               data-inputmask-inputformat="HH:MM" data-inputmask-placeholder="hh:mm"
-                               autocomplete="off" th:field="*{time24h}"/>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="currency" class="col-sm-4 col-form-label">Currency</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="currency"
-                               data-inputmask="'alias': 'numeric', 'groupSeparator': ',', 'autoGroup': true, 'digits': 2, 'digitsOptional': false, 'prefix': '€ ', 'placeholder': '0'"
-                               autocomplete="off" th:field="*{currency}"/>
-                    </div>
-                </div>-->
 
                 <div class="form-group row">
                     <label for="ipaddress" class="col-sm-4 col-form-label">IP Address</label>
@@ -87,19 +42,10 @@
                     </div>
                 </div>
 
-<!--                <div class="form-group row">
-                    <label for="creditCard" class="col-sm-4 col-form-label">Credit Card Number</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="creditCard"
-                               data-inputmask="'mask': '9999 - 9999 - 9999 - 9999'"
-                               autocomplete="off" th:field="*{creditCardNumber}"/>
-                    </div>
-                </div>-->
-
                 <button class="btn btn-primary" type="submit">Submit form</button>
             </form>
 
-            <br/>
+            <!--<br/>
             <br/>
 
             <div class="container">
@@ -112,7 +58,7 @@
 
                     </div>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </div>

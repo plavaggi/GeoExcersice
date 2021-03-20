@@ -28,22 +28,20 @@
     </div>
 </nav>
 
-
-
 <div class="container">
     <div class="row">
         <div class="col-sm-12 mt-5">
-
+            <div class="row">It apperrs Either something went wrong or the page
+                doesn't exist anymore.....</div>
+            <div class="row rowDesign">
             <p>
-                <label>La distancia promedio es (km): </label>
-                <strong th:text="${averageDistance}"></strong>
+                <label>Reason: </label>
+                <strong th:text="${error}"></strong>
             </p>
-
-
         </div>
     </div>
 
-    <a th:href="@{/report}" class="btn btn-primary">Go back</a>
+    <a th:href="@{/}" class="btn btn-primary">Go back</a>
 </div>
 
 </body>

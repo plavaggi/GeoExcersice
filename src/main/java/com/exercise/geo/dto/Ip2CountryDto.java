@@ -1,9 +1,9 @@
-package com.exercise.geo.response;
+package com.exercise.geo.dto;
 
 import lombok.Data;
 
 @Data
-public class Ip2CountryResponse {
+public class Ip2CountryDto {
 
     private String countryCode;
     private String countryCode3;

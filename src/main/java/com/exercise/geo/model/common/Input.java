@@ -1,4 +1,4 @@
-package com.exercise.geo.model;
+package com.exercise.geo.model.common;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

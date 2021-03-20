@@ -6,18 +6,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.exercise.geo.model.GeoData;
+import com.exercise.geo.exception.BadRequestIpSearch;
+import com.exercise.geo.exception.ExchangeException;
+import com.exercise.geo.exception.NotRecognizeIpException;
+import com.exercise.geo.model.entity.GeoData;
 import com.exercise.geo.repository.GeoDataRepository;
-import com.exercise.geo.response.RestCountryCurrency;
+import com.exercise.geo.model.restCountry.RestCountryCurrency;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.exercise.geo.dto.GeoDataDto;
-import com.exercise.geo.response.Ip2CountryResponse;
-import com.exercise.geo.response.RestCountryLanguage;
-import com.exercise.geo.response.RestCountryResponse;
+import com.exercise.geo.dto.Ip2CountryDto;
+import com.exercise.geo.model.restCountry.RestCountryLanguage;
+import com.exercise.geo.dto.RestCountryDto;
 import com.exercise.geo.service.GeoService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,14 +43,16 @@ public class GeoServiceImpl implements GeoService {
 	private final GeoDataRepository geoDataRepository;
 
 	@Override
-	public GeoDataDto getDataByIp(String ip) {
-		Ip2CountryResponse ip2Country = getCountryByIp(ip);
+	public GeoDataDto postDataByIp(String ip) throws NotRecognizeIpException, ExchangeException {
+		Ip2CountryDto ip2Country = getCountryByIp(ip);
 		String isoCode3 = ip2Country.getCountryCode3();
 
-		RestCountryResponse countryData = getCountryDatAByIsoCode3(isoCode3);
-/*
-		String currency = countryData.getCurrencies().get(0).getCode();
-*/
+		if(isoCode3.isEmpty()){
+			throw new NotRecognizeIpException("400","The requested IP brings no location data, please try another one");
+		}
+
+		RestCountryDto countryData = getCountryDatAByIsoCode3(isoCode3);
+
 		String country = countryData.getTranslations().get("es");
 		Double distance = distance(countryData.getLatlng().get(0), countryData.getLatlng().get(1));
 
@@ -62,35 +67,43 @@ public class GeoServiceImpl implements GeoService {
 
 	@Override
 	public GeoDataDto getMaxDistance() {
-		GeoData data = geoDataRepository.findMaxDistance();
+		String data = geoDataRepository.findMaxDistance();
 		GeoDataDto response = new GeoDataDto();
-		response.setIp(data.getIp());
-		response.setDistanciaEstimada(data.getDistance().toString());
-		response.setPais(data.getCountry());
+		String[] parts = data.split(",");
+		String distance = parts[0];
+		String country = parts[1];
+
+		response.setDistanciaEstimada(distance);
+		response.setPais(country);
 
 		return response;
 	}
 
 	@Override
 	public GeoDataDto getMinDistance() {
-		GeoData data = geoDataRepository.findMinDistance();
+		String data = geoDataRepository.findMinDistance();
 		GeoDataDto response = new GeoDataDto();
-		response.setIp(data.getIp());
-		response.setDistanciaEstimada(data.getDistance().toString());
-		response.setPais(data.getCountry());
+		String[] parts = data.split(",");
+		String distance = parts[0];
+		String country = parts[1];
+
+		response.setDistanciaEstimada(distance);
+		response.setPais(country);
 
 		return response;
 	}
 
 	@Override
-	public Double getAverageDistance() {
-		List<String> data = geoDataRepository.sumTest();
-		String[] parts = data.get(0).split(",");
-		double part1 = Double.valueOf(parts[0])/Double.valueOf(parts[1]); 
-		return part1;
+	public HashMap<String, Double> getAverageDistance() {
+		HashMap<String, Double> response = new HashMap<>();
+		String data = geoDataRepository.averageDistanceAndCountry();
+		String[] parts = data.split(",");
+		Double distanciaPromedio = Double.valueOf(parts[0])/Double.valueOf(parts[1]);
+		response.put("distanciaPromedio", distanciaPromedio);
+		return response;
 	}
 
-	private GeoDataDto prepareResponse(RestCountryResponse countryData, String ip, String isoCode3, String country,List<String> exchange, String distance) {
+	private GeoDataDto prepareResponse(RestCountryDto countryData, String ip, String isoCode3, String country, List<String> exchange, String distance) {
 		List<String> horaLocal = new ArrayList<>();
 		List<String> idiomas = new ArrayList<>();
 
@@ -102,11 +115,6 @@ public class GeoServiceImpl implements GeoService {
 		for (RestCountryLanguage language : countryData.getLanguages()) {
 			idiomas.add(language.getName() + " (" + language.getIso639_1() + ")");
 		}
-
-/*
-		currency = currency + (" = ") + 1 / exchange + " (USD)";
-*/
-
 
 		return new GeoDataDto(ip, country, isoCode3, horaLocal, idiomas, exchange, distance);
 	}
@@ -127,22 +135,27 @@ public class GeoServiceImpl implements GeoService {
 		}
 	}
 
-	public Ip2CountryResponse getCountryByIp(String ip) {
+	public Ip2CountryDto getCountryByIp(String ip) {
 		RestTemplate restTemplate = new RestTemplate();
-		Ip2CountryResponse response = restTemplate.getForObject(ip2CountryEndpoint.concat(ip),
-				Ip2CountryResponse.class);
+		Ip2CountryDto response = new Ip2CountryDto();
+		try {
+			response = restTemplate.getForObject(ip2CountryEndpoint.concat(ip), Ip2CountryDto.class);
+		}catch (RuntimeException e){
+			throw new BadRequestIpSearch("400", "The ip must be a valid one (BAD REQUEST)");
+		}
+
 		return response;
 	}
 
-	public RestCountryResponse getCountryDatAByIsoCode3(String countryIsoCode) {
+	public RestCountryDto getCountryDatAByIsoCode3(String countryIsoCode) {
 		RestTemplate restTemplate = new RestTemplate();
-		RestCountryResponse response = restTemplate.getForObject(restCountryEndpoint.concat(countryIsoCode),
-				RestCountryResponse.class);
+		RestCountryDto response = restTemplate.getForObject(restCountryEndpoint.concat(countryIsoCode),
+				RestCountryDto.class);
 		return response;
 
 	}
 
-	public List<String> getExchange(List<RestCountryCurrency> currency) {
+	public List<String> getExchange(List<RestCountryCurrency> currency) throws ExchangeException {
 
 		String currencies = "";
 		List<String> response= new ArrayList<>();
@@ -154,7 +167,9 @@ public class GeoServiceImpl implements GeoService {
 
 		RestTemplate restTemplate = new RestTemplate();
 		JsonNode exhcangeResponse = restTemplate.getForObject(currencyLayerEndpoint.concat(currencies), JsonNode.class);
-
+		if(exhcangeResponse.isNull() || !exhcangeResponse.get("success").asBoolean()){
+			throw new ExchangeException("403", "credentials error");
+		}
 		for (RestCountryCurrency currencyCode: currency) {
 			response.add(currencyCode.getCode() + " = " + 1 / exhcangeResponse.get("quotes").get("USD"+currencyCode.getCode()).asDouble()+ " (USD)");
 		}
