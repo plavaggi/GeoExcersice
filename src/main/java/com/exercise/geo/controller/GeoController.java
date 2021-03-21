@@ -18,7 +18,7 @@ import java.util.HashMap;
 @RequestMapping("/geo-api")
 public class GeoController {
 
-    public static final String MISSING_IP_DATA = "Empty country data for the requested ip";
+    public static final String MISSING_IP_DATA = "The requested IP brings no location data, please try another one";
 
 
     @Autowired

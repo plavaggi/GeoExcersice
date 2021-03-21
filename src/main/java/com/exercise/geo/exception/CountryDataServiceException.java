@@ -1,8 +1,8 @@
 package com.exercise.geo.exception;
 
-public class ExchangeException extends RuntimeException{
+public class CountryDataServiceException extends RuntimeException{
 
-	private static final long serialVersionUID = 101262531593930943L;
+	private static final long serialVersionUID = -7750633312843148074L;
 	private int code;
 
     public int getCode() {
@@ -13,8 +13,9 @@ public class ExchangeException extends RuntimeException{
         this.code = code;
     }
 
-    public ExchangeException(int code, String message) {
+    public CountryDataServiceException(int code, String message) {
         super(message);
         this.setCode(code);
     }
+
 }

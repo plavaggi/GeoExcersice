@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.exercise.geo.exception.BadRequestIpSearch;
+import com.exercise.geo.exception.BadRequestIpSearchException;
+import com.exercise.geo.exception.CountryDataServiceException;
 import com.exercise.geo.exception.ExchangeException;
 import com.exercise.geo.exception.NotRecognizeIpException;
 import com.exercise.geo.model.entity.GeoData;
@@ -14,6 +15,7 @@ import com.exercise.geo.repository.GeoDataRepository;
 import com.exercise.geo.model.restCountry.RestCountryCurrency;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,13 +44,20 @@ public class GeoServiceImpl implements GeoService {
 
 	private final GeoDataRepository geoDataRepository;
 
+	public static final String MISSING_IP_DATA = "The requested IP brings no location data, please try another one";
+	public static final String BAD_REQUEST_IP = "The ip must be a valid one (BAD REQUEST)";
+	public static final String SERVICE_ERROR = "Oops! Something went wrong. Please reload the page and try again";
+
 	@Override
 	public GeoDataDto postDataByIp(String ip) throws NotRecognizeIpException, ExchangeException {
+		GeoDataDto response = new GeoDataDto();
+
 		Ip2CountryDto ip2Country = getCountryByIp(ip);
 		String isoCode3 = ip2Country.getCountryCode3();
 
-		if(isoCode3.isEmpty()){
-			throw new NotRecognizeIpException("400","The requested IP brings no location data, please try another one");
+		if (isoCode3.isEmpty()) {
+			log.info("Error: la ip no trae informacion alguna");
+			throw new NotRecognizeIpException(400, MISSING_IP_DATA);
 		}
 
 		RestCountryDto countryData = getCountryDatAByIsoCode3(isoCode3);
@@ -58,10 +67,12 @@ public class GeoServiceImpl implements GeoService {
 
 		List<String> exchange = getExchange(countryData.getCurrencies());
 
-		GeoData data = new GeoData(ip, country, distance);
-		geoDataRepository.save(data);
+		response = prepareResponse(countryData, ip, isoCode3, country, exchange, distance.toString());
 
-		return prepareResponse(countryData, ip, isoCode3, country, exchange, distance.toString());
+		GeoData data = new GeoData(ip, country, distance);
+		geoDataRepository.save(data);// TODO guardar el resto de la respuesta
+
+		return response;
 
 	}
 
@@ -98,12 +109,13 @@ public class GeoServiceImpl implements GeoService {
 		HashMap<String, Double> response = new HashMap<>();
 		String data = geoDataRepository.averageDistanceAndCountry();
 		String[] parts = data.split(",");
-		Double distanciaPromedio = Double.valueOf(parts[0])/Double.valueOf(parts[1]);
+		Double distanciaPromedio = Double.valueOf(parts[0]) / Double.valueOf(parts[1]);
 		response.put("distanciaPromedio", distanciaPromedio);
 		return response;
 	}
 
-	private GeoDataDto prepareResponse(RestCountryDto countryData, String ip, String isoCode3, String country, List<String> exchange, String distance) {
+	private GeoDataDto prepareResponse(RestCountryDto countryData, String ip, String isoCode3, String country,
+			List<String> exchange, String distance) {
 		List<String> horaLocal = new ArrayList<>();
 		List<String> idiomas = new ArrayList<>();
 
@@ -140,17 +152,22 @@ public class GeoServiceImpl implements GeoService {
 		Ip2CountryDto response = new Ip2CountryDto();
 		try {
 			response = restTemplate.getForObject(ip2CountryEndpoint.concat(ip), Ip2CountryDto.class);
-		}catch (RuntimeException e){
-			throw new BadRequestIpSearch("400", "The ip must be a valid one (BAD REQUEST)");
+		} catch (RuntimeException e) {
+			log.info("Error: la ip ingresada no es valida");
+			throw new BadRequestIpSearchException(400, BAD_REQUEST_IP);
 		}
-
 		return response;
 	}
 
 	public RestCountryDto getCountryDatAByIsoCode3(String countryIsoCode) {
 		RestTemplate restTemplate = new RestTemplate();
-		RestCountryDto response = restTemplate.getForObject(restCountryEndpoint.concat(countryIsoCode),
-				RestCountryDto.class);
+		RestCountryDto response = new RestCountryDto();
+		try {
+			response = restTemplate.getForObject(restCountryEndpoint.concat(countryIsoCode), RestCountryDto.class);
+		} catch (RuntimeException e) {
+			log.info("Error: Fallo el servicio de restCountry");
+			throw new CountryDataServiceException(500, SERVICE_ERROR);
+		}
 		return response;
 
 	}
@@ -158,20 +175,22 @@ public class GeoServiceImpl implements GeoService {
 	public List<String> getExchange(List<RestCountryCurrency> currency) throws ExchangeException {
 
 		String currencies = "";
-		List<String> response= new ArrayList<>();
+		List<String> response = new ArrayList<>();
 
-		for (RestCountryCurrency currencyCode: currency) {
+		for (RestCountryCurrency currencyCode : currency) {
 			currencies = currencies + currencyCode.getCode() + ",";
 		}
 		currencies = currencies.substring(0, currencies.length() - 1);
 
 		RestTemplate restTemplate = new RestTemplate();
 		JsonNode exhcangeResponse = restTemplate.getForObject(currencyLayerEndpoint.concat(currencies), JsonNode.class);
-		if(exhcangeResponse.isNull() || !exhcangeResponse.get("success").asBoolean()){
-			throw new ExchangeException("403", "credentials error");
+		if (exhcangeResponse.isNull() || !exhcangeResponse.get("success").asBoolean()) {
+			log.info("Error: Fallo el servicio de currencyLayer");
+			throw new ExchangeException(500, SERVICE_ERROR);
 		}
-		for (RestCountryCurrency currencyCode: currency) {
-			response.add(currencyCode.getCode() + " = " + 1 / exhcangeResponse.get("quotes").get("USD"+currencyCode.getCode()).asDouble()+ " (USD)");
+		for (RestCountryCurrency currencyCode : currency) {
+			response.add(currencyCode.getCode() + " = "
+					+ 1 / exhcangeResponse.get("quotes").get("USD" + currencyCode.getCode()).asDouble() + " (USD)");
 		}
 
 		return response;

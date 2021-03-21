@@ -1,18 +1,18 @@
 package com.exercise.geo.exception;
 
-public class BadRequestIpSearch extends RuntimeException{
+public class BadRequestIpSearchException extends RuntimeException {
     private static final long serialVersionUID = 4674069108333467772L;
-    private String code;
+    private int code;
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(int code) {
         this.code = code;
     }
 
-    public BadRequestIpSearch(String code, String message) {
+    public BadRequestIpSearchException(int code, String message) {
         super(message);
         this.setCode(code);
     }
