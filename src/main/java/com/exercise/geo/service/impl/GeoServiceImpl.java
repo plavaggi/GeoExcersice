@@ -1,32 +1,29 @@
 package com.exercise.geo.service.impl;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import com.exercise.geo.dto.GeoDataDto;
+import com.exercise.geo.dto.Ip2CountryDto;
+import com.exercise.geo.dto.RestCountryDto;
 import com.exercise.geo.exception.BadRequestIpSearchException;
 import com.exercise.geo.exception.CountryDataServiceException;
 import com.exercise.geo.exception.ExchangeException;
 import com.exercise.geo.exception.NotRecognizeIpException;
 import com.exercise.geo.model.entity.GeoData;
-import com.exercise.geo.repository.GeoDataRepository;
 import com.exercise.geo.model.restCountry.RestCountryCurrency;
+import com.exercise.geo.model.restCountry.RestCountryLanguage;
+import com.exercise.geo.repository.GeoDataRepository;
+import com.exercise.geo.service.GeoService;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.exercise.geo.dto.GeoDataDto;
-import com.exercise.geo.dto.Ip2CountryDto;
-import com.exercise.geo.model.restCountry.RestCountryLanguage;
-import com.exercise.geo.dto.RestCountryDto;
-import com.exercise.geo.service.GeoService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -56,7 +53,7 @@ public class GeoServiceImpl implements GeoService {
 		String isoCode3 = ip2Country.getCountryCode3();
 
 		if (isoCode3.isEmpty()) {
-			log.info("Error: la ip no trae informacion alguna");
+			log.info("Error: la ip {} no trae informacion alguna", ip);
 			throw new NotRecognizeIpException(400, MISSING_IP_DATA);
 		}
 
@@ -70,7 +67,7 @@ public class GeoServiceImpl implements GeoService {
 		response = prepareResponse(countryData, ip, isoCode3, country, exchange, distance.toString());
 
 		GeoData data = new GeoData(ip, country, distance);
-		geoDataRepository.save(data);// TODO guardar el resto de la respuesta
+		geoDataRepository.save(data);
 
 		return response;
 
@@ -109,7 +106,7 @@ public class GeoServiceImpl implements GeoService {
 		HashMap<String, Double> response = new HashMap<>();
 		String data = geoDataRepository.averageDistanceAndCountry();
 		String[] parts = data.split(",");
-		Double distanciaPromedio = Double.valueOf(parts[0]) / Double.valueOf(parts[1]);
+		Double distanciaPromedio = Double.parseDouble(parts[0]) / Double.parseDouble(parts[1]);
 		response.put("distanciaPromedio", distanciaPromedio);
 		return response;
 	}
@@ -153,7 +150,7 @@ public class GeoServiceImpl implements GeoService {
 		try {
 			response = restTemplate.getForObject(ip2CountryEndpoint.concat(ip), Ip2CountryDto.class);
 		} catch (RuntimeException e) {
-			log.info("Error: la ip ingresada no es valida");
+			log.info("Error: la ip {} no es valida", ip);
 			throw new BadRequestIpSearchException(400, BAD_REQUEST_IP);
 		}
 		return response;
