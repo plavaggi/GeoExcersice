@@ -49,6 +49,8 @@ Bastaria ejecutar en orden:
 ./run-api.sh
 ```
 
+Si se quiere correr por fuera de docker, levantar en un ide a eleccion completando las variables de entorno acorde a las keys que estan en el archivo .env con los valores que correspondan localmente
+
 ### Interfaz
 
 
